@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.middleware import FSMContext, BaseMiddleware
 from datetime import datetime
 import gspread
@@ -50,17 +50,18 @@ dp = Dispatcher()
 dp.include_routers(rout_temp, rout_shares)
 dp.message.middleware(SheetsLogger(wks))
 dp.callback_query.middleware(SheetsLogger(wks))
+logo = FSInputFile('./images/logo.png')
 
 @dp.message(CommandStart())
 async def command_start(message: Message, state: FSMContext):
 	await state.clear() # We reset the state if the user hasn't completed it.
-	await message.answer('Привет! Чем могу помочь?', reply_markup=start_board_inline)
+	await message.answer_photo(photo=logo, caption='<b>Привет!</b> 👋\nЧем могу помочь? 😊', reply_markup=start_board_inline, parse_mode='HTML')
 
 @dp.callback_query(F.data == 'return_menu')
 async def start_menu(callback: CallbackQuery, state: FSMContext):
 	await state.clear() # We reset the state if the user hasn't completed it.
 	await callback.message.delete()
-	await callback.message.answer('Привет! Чем могу помочь?', reply_markup=start_board_inline)
+	await callback.message.answer_photo(photo=logo, caption='<b>Привет!</b> 👋\nЧем могу помочь? 😊', reply_markup=start_board_inline, parse_mode='HTML')
 
 async def main():
 	await bot.delete_webhook(drop_pending_updates=True) # Delete messages that were received while the bot was offline.

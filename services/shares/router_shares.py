@@ -1,9 +1,9 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, FSInputFile
 from aiogram.fsm.middleware import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from inline_board import return_board_inline, shares_method_inline, shares_return_inline
+from inline_board import return_board_inline, shares_method_inline, shares_return_inline, return_board_2_inline
 from services.shares.utils import get_price_now
 
 class StateForm(StatesGroup):
@@ -12,6 +12,7 @@ class StateForm(StatesGroup):
 
 
 rout_shares = Router()
+shares = FSInputFile('./images/shares.jfif')
 
 @rout_shares.callback_query(F.data == 'shares')
 async def cmd_shares(callback: CallbackQuery, state: FSMContext):
@@ -25,7 +26,7 @@ async def cmd_name_share(callback: CallbackQuery, state: FSMContext):
 	await state.set_state(StateForm.company_name)
 	await callback.message.delete()
 
-	await callback.message.answer("Введите полное название компании, точно как на nasdaq.com \n(например, 'Apple Inc. Common Stock' вместо 'Apple')",
+	await callback.message.answer("Введите название компании 🏙️, акции которой вас интересуют по цене 👇",
 	                              reply_markup=shares_return_inline)
 
 @rout_shares.message(StateForm.company_name)
@@ -36,8 +37,8 @@ async def cmd_price_name(message: Message, state: FSMContext):
 		await message.answer(data['error'])
 		return
 
-	await message.answer(f'Компания под символом {data['symbol']} на данный момент торгуется по цене - ${data['price']}',
-	                     reply_markup=return_board_inline)
+	await message.answer_photo(photo=shares, caption=f'Компания под символом\n<b>{data['symbol']}</b> 📝 на данный момент торгуется \nпо цене - 💲{data['price']}',
+	                     reply_markup=return_board_inline, parse_mode='HTML')
 	await state.clear()
 
 @rout_shares.callback_query(F.data == 'ticker_share')
@@ -45,8 +46,8 @@ async def cmd_symbol_shares(callback: CallbackQuery, state: FSMContext):
 	await state.set_state(StateForm.company_symbol)
 	await callback.message.delete()
 
-	await callback.message.answer("Введите символ компании \n(например, 'AAPL' вместо 'Apple')",
-	                              reply_markup=return_board_inline)
+	await callback.message.answer("Введите символ компании 🏙️ \n(например, <b>'AAPL'</b> вместо <b>'Apple'</b>)",
+	                              reply_markup=shares_return_inline, parse_mode='HTML')
 
 
 @rout_shares.message(StateForm.company_symbol)
@@ -57,7 +58,7 @@ async def cmd_price_symbol(message: Message, state: FSMContext):
 		await message.answer(data['error'])
 		return
 
-	await message.answer(
-		f'Компания под символом {data['symbol']} на данный момент торгуется по цене - ${data['price']}',
-		reply_markup=return_board_inline)
+	await message.answer_photo(photo=shares,
+	    caption=f'Компания под символом\n<b>{data['symbol'].upper()}</b> 📝 на данный момент торгуется \nпо цене - 💲{data['price']}',
+		reply_markup=return_board_inline, parse_mode='HTML')
 	await state.clear()
