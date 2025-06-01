@@ -13,6 +13,7 @@
 
 ### The first one is to get the weather in your city by its name. 
 ### The second one is to get the current stock price of a company by its ticker or full name.
+### Also, the Gemini AI model is used for confident text recognition and correction of user spelling errors.
 ## Additionally, the bot features a logging system that records data into Google Sheets.
 
 
@@ -27,9 +28,7 @@
 
 # 🚀 Quick Start
 
-## The bot works using polling. Therefore, all you need to do is create a .env file with your bot's token and run the command below in your project folder.
+## The bot works using polling. Therefore, all you need to do is create a .env file with your bot's token. To run the project, you only need Docker.
 
 ```sh
-pip install -r requirements.txt
-
-python main.py
+docker compose up --build
