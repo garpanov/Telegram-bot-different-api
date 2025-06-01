@@ -1,14 +1,9 @@
-from google import genai
-import os
+import polib
 
-from dotenv import load_dotenv
-load_dotenv()
+po_path = 'locales/uk/LC_MESSAGES/messages.po'
+mo_path = 'locales/uk/LC_MESSAGES/messages.mo'
 
-client = genai.Client(api_key=os.getenv('GEMINI_KEY'))
+po = polib.pofile(po_path)
+po.save_as_mofile(mo_path)
 
-response = client.models.generate_content(
-    model="gemini-2.0-flash",
-    contents="Какой тикер акций на бирже имеет компания епл? Дай только тикер",
-)
-
-print(response.text)
+print("Файл .mo створено успішно")

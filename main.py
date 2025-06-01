@@ -7,9 +7,12 @@ import gspread
 import asyncio
 import os
 
+from locales.lang_search import get_string
+from services.db.query import get_lang
 from services.shares.router_shares import rout_shares
 from services.temperature.router_temp import rout_temp
-from inline_board import start_board_inline
+from services.languages.router_lang import rout_lang
+from inline_board import get_start_board_inline
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -47,21 +50,29 @@ wks = gc.open("task-test-logins").sheet1
 token = os.getenv('TOKEN_TG')
 bot = Bot(token=token)
 dp = Dispatcher()
-dp.include_routers(rout_temp, rout_shares)
+
+dp.include_routers(rout_temp, rout_shares, rout_lang)
 dp.message.middleware(SheetsLogger(wks))
 dp.callback_query.middleware(SheetsLogger(wks))
+
 logo = FSInputFile('./images/logo.png')
 
 @dp.message(CommandStart())
 async def command_start(message: Message, state: FSMContext):
 	await state.clear() # We reset the state if the user hasn't completed it.
-	await message.answer_photo(photo=logo, caption='<b>Привет!</b> 👋\nЧем могу помочь? 😊', reply_markup=start_board_inline, parse_mode='HTML')
+
+	lang = await get_lang(message.from_user.id)
+	text_for_response = get_string(lang, 'command_start')
+	await message.answer_photo(photo=logo, caption=f'{text_for_response}', reply_markup=get_start_board_inline(lang), parse_mode='HTML')
 
 @dp.callback_query(F.data == 'return_menu')
 async def start_menu(callback: CallbackQuery, state: FSMContext):
 	await state.clear() # We reset the state if the user hasn't completed it.
 	await callback.message.delete()
-	await callback.message.answer_photo(photo=logo, caption='<b>Привет!</b> 👋\nЧем могу помочь? 😊', reply_markup=start_board_inline, parse_mode='HTML')
+
+	lang = await get_lang(callback.from_user.id)
+	text_for_response = get_string(lang, 'command_start')
+	await callback.message.answer_photo(photo=logo, caption=f'{text_for_response}', reply_markup=get_start_board_inline(lang), parse_mode='HTML')
 
 async def main():
 	await bot.delete_webhook(drop_pending_updates=True) # Delete messages that were received while the bot was offline.

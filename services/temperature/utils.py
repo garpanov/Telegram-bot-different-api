@@ -8,6 +8,16 @@ load_dotenv()
 API_KEY = os.getenv('WEATHER_KEY')
 client = genai.Client(api_key=os.getenv('GEMINI_KEY'))
 
+async def fetch_api_geo(latitude, longitude):
+	params = {'key': API_KEY, 'q': f'{latitude},{longitude}'}
+	async with aiohttp.ClientSession() as session:
+		async with session.get('http://api.weatherapi.com/v1/current.json', params=params) as response:
+			if response.status == 200:
+				data = await response.json()
+				return data['current']['temp_c']
+			else:
+				return {'error': "Not Found"}
+
 async def fetch_api(city):
 	params = {'key': API_KEY, 'q': city}
 	async with aiohttp.ClientSession() as session:
